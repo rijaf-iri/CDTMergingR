@@ -1,2 +1,2 @@
 # CDTMergingR
-Climate Data Tools Merging Methods
+Climate Data Tools (CDT) merging methods
