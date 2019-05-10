@@ -83,4 +83,3 @@ create_grid_buffer <- function(locations.stn, newgrid, radius, spheric)
 	newdata0 <- newgrid[igrid, ]
 	list(grid.buff = newdata0, ij = igrid, coarse = coarsegrid)
 }
-
