@@ -39,3 +39,10 @@ ncFilesInfo <- function(Tstep, start.date, end.date, months,
 	}
 	return(list(dates = dates, nc.files = ncDataFiles, exist = existFl))
 }
+
+transposeNCDFData <- function(x, ixy){
+	if(ixy$ilon < ixy$ilat)
+		x[ixy$olon, ixy$olat]
+	else
+		t(x)[ixy$olon, ixy$olat]
+}

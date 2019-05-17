@@ -17,12 +17,6 @@ rain_no_rain.mask <- function(locations.stn, newgrid, pars.RnoR)
 		locations.stn$rnr.res <- residuals(glm.binom)
 		rnr.trend <- predict(glm.binom, newdata = newgrid, type = 'link')
 
-		# rnr.res.grd0 <- gstat::krige(rnr.res~1, locations = locations.stn, newdata = newgrid, maxdist = pars.RnoR$maxdist, debug.level = 0)
-		# rnr.res.grd1 <- gstat::krige(rnr.res~1, locations = locations.stn, newdata = newgrid, debug.level = 0)
-		# rnr.res.grd <- rnr.res.grd0$var1.pred
-		# ina <- is.na(rnr.res.grd)
-		# rnr.res.grd[ina] <- rnr.res.grd1$var1.pred[ina]
-		# rnr <- rnr.trend + rnr.res.grd
 		rnr.res.grd <- gstat::krige(rnr.res~1, locations = locations.stn, newdata = newgrid, debug.level = 0)
 		rnr <- rnr.trend + rnr.res.grd$var1.pred
 

@@ -49,7 +49,7 @@ distance.matrix <- function(xy.pts, XY, spheric){
 	# XY: matrix (X, Y)
 	# nmin, nmax: integer
 	xdst <- distance.vector(xy, XY, spheric)
-	odst <- .Internal(order(TRUE, FALSE, xdst))
+	odst <- order(xdst)
 	xdst <- xdst[odst]
 	nmean <- 1:as.integer((nmin + nmax)/2)
 	rs.const <- mean(xdst[nmean])

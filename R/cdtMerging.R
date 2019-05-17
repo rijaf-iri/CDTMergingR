@@ -54,6 +54,7 @@
 #' 	\item \code{name}: name of the netcdf variable. Example: \strong{"precip"} or \strong{"temp"}
 #' 	\item \code{units}: units of the netcdf variable
 #' 	\item \code{longname}: longname of the netcdf
+#'  \item \code{prec}: Precision of the output created variable. Valid options: \strong{"short"}, \strong{"integer"}, \strong{"float"} or \strong{"double"}.
 #' }
 #' @param use.RnoR If \code{TRUE}, apply rain-no-rain mask for rainfall data.
 #' @param pars.RnoR A list of parameters to be used if \code{use.RnoR} is \code{TRUE}.
@@ -66,6 +67,7 @@
 #'
 #' @examples
 #' 
+#' \dontrun{
 #' cdtMerging(
 #' 		time.step = "dekadal",
 #' 		start.date = c(2018, 1, 1),
@@ -89,7 +91,8 @@
 #' 		pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
 #' 		vgm.model = c("Exp", "Gau", "Sph", "Pen")
 #' 	)
-#' 
+#' }
+#'
 #' @export
 
 cdtMerging <- function(
@@ -101,12 +104,12 @@ cdtMerging <- function(
 						merging.method = "SBA", 
 						interp.method = "idw",
 						spheric = FALSE,
-						maxdist = 1.5,
-						pass.ratio = c(1, 0.75, 0.5),
+						maxdist = 2.5,
+						pass.ratio = c(1, 0.5, 0.2),
 						pass.nmin = c(5, 4, 3),
 						pass.nmax = c(15, 10, 7),
-						neg.value = TRUE,
-						output = list(dir = NULL, format = "rr_mrg_%s%s%s.nc", name = "precip", units = "mm", longname = NA),
+						neg.value = FALSE,
+						output = list(dir = NULL, format = "rr_mrg_%s%s%s.nc", name = "precip", units = "mm", longname = NA, prec = "short"),
 						use.RnoR = FALSE,
 						pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
 						vgm.model = c("Exp", "Gau", "Sph", "Pen")
@@ -196,14 +199,18 @@ cdtMerging <- function(
 	grd.lon <- nc$var[[netcdf$varid]]$dim[[netcdf$order.lon]]$vals
 	grd.lat <- nc$var[[netcdf$varid]]$dim[[netcdf$order.lat]]$vals
 	nc_close(nc)
-	nlon0 <- length(grd.lon)
-	nlat0 <- length(grd.lat)
+	xo <- order(grd.lon)
+	yo <- order(grd.lat)
+	grd.lon <- grd.lon[xo]
+	grd.lat <- grd.lat[yo]
+	nc.order <- list(ilon = netcdf$order.lon, ilat = netcdf$order.lat, olon = xo, olat = yo)
 
 	dx <- ncdim_def("Lon", "degreeE", grd.lon)
 	dy <- ncdim_def("Lat", "degreeN", grd.lat)
+	shuffle <- if(output$prec %in% c("integer", "short")) TRUE else FALSE
 	grd.nc.out <- ncvar_def(output$name, output$units, list(dx, dy), -99,
-							longname = output$longname,
-							prec = "short", shuffle = TRUE, compression = 9)
+							longname = output$longname, prec = output$prec,
+							shuffle = shuffle, compression = 9)
 
 	##############
 
@@ -216,6 +223,7 @@ cdtMerging <- function(
 			nc <- nc_open(ncInfo$nc.files[jj])
 			nc.val <- ncvar_get(nc, varid = netcdf$varid)
 			nc_close(nc)
+			nc.val <- transposeNCDFData(nc.val, nc.order)
 		}else{
 			cat(paste(ncInfo$dates[jj], ":", "no netcdf data", "|", "no file generated", "\n"))
 			next
@@ -249,7 +257,7 @@ cdtMerging <- function(
 		out.mrg <- merging.functions(locations.stn, newgrid, 
 									merging.method, interp.method,
 									maxdist, pass.ratio, pass.nmin, pass.nmax, 
-									vgm.model, spheric, ncInfo, neg.value)
+									vgm.model, spheric, ncInfo$dates[jj], neg.value)
 		if(use.RnoR){
 			rnr <- rain_no_rain.mask(locations.stn, newgrid, pars.RnoR)
 			out.mrg <- out.mrg * rnr

@@ -259,6 +259,7 @@ spheremap.interp <- function(locations, values, newdata, nmin, nmax, spheric){
 	xy.s <- XY[ldst$order, ][1:npts, , drop = FALSE]
 
 	if(all(dst < 1e-10)) return(sum(z.s)/npts)
+	if(abs(diff(range(z.s))) < 1e-10) return(z.s[1])
 
 	Sk <- rep(0, npts)
 	crt1 <- dst <= rmax/3
@@ -299,27 +300,24 @@ spheremap.interp <- function(locations, values, newdata, nmin, nmax, spheric){
 		dlat.jk <- xy.g[2] - xy.s[, 2]
 	}
 
-	deltaZ.k <- 0
-	if(all((z.s[1] - z.s) != 0)){
-		dz.lon.k <- rep(NA, npts)
-		dz.lat.k <- rep(NA, npts)
-		for(k in 1:npts){
-			dst.kl <- distance.vector(xy.s[k, ], xy.s[-k, ], spheric)
-			if(spheric){
-				dlon.lk <- (xy.s[-k, 1] - xy.s[k, 1]) * cos(xy.s[-k, 2] * pi/180)
-				dlat.lk <- xy.s[-k, 2] - xy.s[k, 2]
-				dst.kl <- 6378.388 * dst.kl
-			}else{
-				dlon.lk <- xy.s[-k, 1] - xy.s[k, 1]
-				dlat.lk <- xy.s[-k, 2] - xy.s[k, 2]
-			}
-			dz.lon.k[k] <- sum(Wk[-k] * (z.s[-k] - z.s[k]) * dlon.lk * (1/dst.kl^2))/sum(Wk[-k]) 
-			dz.lat.k[k] <- sum(Wk[-k] * (z.s[-k] - z.s[k]) * dlat.lk * (1/dst.kl^2))/sum(Wk[-k])
+	dz.lon.k <- rep(NA, npts)
+	dz.lat.k <- rep(NA, npts)
+	for(k in 1:npts){
+		dst.kl <- distance.vector(xy.s[k, ], xy.s[-k, ], spheric)
+		if(spheric){
+			dlon.lk <- (xy.s[-k, 1] - xy.s[k, 1]) * cos(xy.s[-k, 2] * pi/180)
+			dlat.lk <- xy.s[-k, 2] - xy.s[k, 2]
+			dst.kl <- 6378.388 * dst.kl
+		}else{
+			dlon.lk <- xy.s[-k, 1] - xy.s[k, 1]
+			dlat.lk <- xy.s[-k, 2] - xy.s[k, 2]
 		}
-
-		v <- 0.1 * diff(range(dat.s, na.rm = TRUE)) / max(sqrt(dz.lon.k^2 + dz.lat.k^2))
-		deltaZ.k <- (dz.lon.k * dlon.jk + dz.lat.k * dlat.jk) * (v/(v + dst))
+		dz.lon.k[k] <- sum(Wk[-k] * (z.s[-k] - z.s[k]) * dlon.lk * (1/dst.kl^2))/sum(Wk[-k]) 
+		dz.lat.k[k] <- sum(Wk[-k] * (z.s[-k] - z.s[k]) * dlat.lk * (1/dst.kl^2))/sum(Wk[-k])
 	}
+
+	v <- 0.1 * diff(range(dat.s, na.rm = TRUE)) / max(sqrt(dz.lon.k^2 + dz.lat.k^2))
+	deltaZ.k <- (dz.lon.k * dlon.jk + dz.lat.k * dlat.jk) * (v/(v + dst))
 
 	sum(Wk * (z.s + deltaZ.k))/sum(Wk)
 }

@@ -2,8 +2,7 @@
 merging.functions <- function(locations.stn, newgrid, 
 							merging.method, interp.method,
 							maxdist, pass.ratio, pass.nmin, pass.nmax,
-							vgm.model, spheric, ncInfo,
-							neg.value = FALSE)
+							vgm.model, spheric, nc.date, neg.value)
 {
 	interp.method <- switch(merging.method,
 							"CSc" = "cressman",
@@ -27,7 +26,7 @@ merging.functions <- function(locations.stn, newgrid,
 		locations.stn <- locations.stn[!is.na(locations.stn$grd), ]
 
 		if(length(locations.stn) < nmin){
-			cat(paste(ncInfo$dates[jj], ":", "not enough station data", "|", "Output: gridded data", "\n"))
+			cat(paste(nc.date, ":", "not enough station data", "|", "Output: gridded data", "\n"))
 			out.mrg <- matrix(newgrid@data$grd,
 							ncol = newgrid@grid@cells.dim[2],
 							nrow = newgrid@grid@cells.dim[1])
@@ -43,11 +42,11 @@ merging.functions <- function(locations.stn, newgrid,
 		## RK
 		if(merging.method == "RK"){
 			if(var(locations.stn$stn) < 1e-07 | var(locations.stn$grd, na.rm = TRUE) < 1e-07){
-				cat(paste(ncInfo$dates[jj], ":", "Zero variance", "|", "Simple Bias Adjustment", "\n"))
+				cat(paste(nc.date, ":", "Zero variance", "|", "Simple Bias Adjustment", "\n"))
 			}else{
 				glm.stn <- glm(stn ~ grd, data = locations.stn, family = gaussian)
 				if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0){
-					cat(paste(ncInfo$dates[jj], ":", "Invalid GLM coeffs", "|", "Simple Bias Adjustment", "\n"))
+					cat(paste(nc.date, ":", "Invalid GLM coeffs", "|", "Simple Bias Adjustment", "\n"))
 				}else{
 					sp.trend <- predict(glm.stn, newdata = newdata0)
 					ina.out <- is.na(sp.trend)
@@ -81,23 +80,12 @@ merging.functions <- function(locations.stn, newgrid,
 						pts <- c(ctr[1] + vgm$range[2] * cos(pi/4), ctr[2] + vgm$range[2] * sin(pi/4))
 						vgm$range[2] <- spheric.distance(pts, matrix(ctr, nrow = 1))
 					}
-
-					## Fortran
-					Vgm <- switch(as.character(vgm$model[2]), 
-									"Gau" = 1,
-									"Exp" = 2,
-									"Sph" = 3, 
-									"Pen" = 4)
-					Vgm <- as.integer(Vgm)
-					Nug <- as.double(vgm$psill[1])
-					Sill <- as.double(vgm$psill[2])
-					Range <- as.double(vgm$range[2])
 				}else{
-					cat(paste(ncInfo$dates[jj], ":", "Unable to compute variogram", "|", "Interpolation using IDW", "\n"))
+					cat(paste(nc.date, ":", "Unable to compute variogram", "|", "Interpolation using IDW", "\n"))
 					interp.method <- "idw"
 				}
 			}else{
-				cat(paste(ncInfo$dates[jj], ":", "Unable to compute variogram", "|", "Interpolation using IDW", "\n"))
+				cat(paste(nc.date, ":", "Unable to compute variogram", "|", "Interpolation using IDW", "\n"))
 				interp.method <- "idw"
 			}
 		}

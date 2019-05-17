@@ -5,15 +5,16 @@
 \title{CDT merging methods}
 \usage{
 cdtMerging(time.step = "dekadal", start.date = c(1981, 1, 1),
-  end.date = c(2018, 12, 3), station = list(file = NULL, sep = ",", miss =
-  "-99"), netcdf = list(dir = NULL, varid = NA, order.lon = 1, order.lat = 2,
-  format = "rfe_\%s\%s\%s.nc"), merging.method = "SBA",
-  interp.method = "idw", spheric = FALSE, maxdist = 1.5,
-  pass.ratio = c(1, 0.75, 0.5), pass.nmin = c(5, 4, 3), pass.nmax = c(15,
-  10, 7), neg.value = TRUE, output = list(dir = NULL, format =
-  "rr_mrg_\%s\%s\%s.nc", name = "precip", units = "mm", longname = NA),
-  use.RnoR = FALSE, pars.RnoR = list(wet.day = 1, smooth = FALSE, maxdist =
-  0.25), vgm.model = c("Exp", "Gau", "Sph", "Pen"))
+  end.date = c(2018, 12, 3), station = list(file = NULL, sep = ",",
+  miss = "-99"), netcdf = list(dir = NULL, varid = NA, order.lon = 1,
+  order.lat = 2, format = "rfe_\%s\%s\%s.nc"), merging.method = "SBA",
+  interp.method = "idw", spheric = FALSE, maxdist = 2.5,
+  pass.ratio = c(1, 0.5, 0.2), pass.nmin = c(5, 4, 3),
+  pass.nmax = c(15, 10, 7), neg.value = FALSE, output = list(dir =
+  NULL, format = "rr_mrg_\%s\%s\%s.nc", name = "precip", units = "mm",
+  longname = NA, prec = "short"), use.RnoR = FALSE,
+  pars.RnoR = list(wet.day = 1, smooth = FALSE, maxdist = 0.25),
+  vgm.model = c("Exp", "Gau", "Sph", "Pen"))
 }
 \arguments{
 \item{time.step}{Time step of the data. Should be \strong{"daily"}, \strong{"pentad"}, \strong{"dekadal"} or \strong{"monthly"}.}
@@ -80,6 +81,7 @@ cdtMerging(time.step = "dekadal", start.date = c(1981, 1, 1),
     \item \code{name}: name of the netcdf variable. Example: \strong{"precip"} or \strong{"temp"}
     \item \code{units}: units of the netcdf variable
     \item \code{longname}: longname of the netcdf
+ \item \code{prec}: Precision of the output created variable. Valid options: \strong{"short"}, \strong{"integer"}, \strong{"float"} or \strong{"double"}.
 }}
 
 \item{use.RnoR}{If \code{TRUE}, apply rain-no-rain mask for rainfall data.}
@@ -99,6 +101,7 @@ Cressman Scheme and Barnes Scheme. The radius of influence for the interpolation
 }
 \examples{
 
+\dontrun{
 cdtMerging(
 		time.step = "dekadal",
 		start.date = c(2018, 1, 1),
@@ -122,5 +125,6 @@ cdtMerging(
 		pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
 		vgm.model = c("Exp", "Gau", "Sph", "Pen")
 	)
+}
 
 }
