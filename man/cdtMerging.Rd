@@ -13,8 +13,8 @@ cdtMerging(time.step = "dekadal", start.date = c(1981, 1, 1),
   pass.nmax = c(15, 10, 7), neg.value = FALSE, output = list(dir =
   NULL, format = "rr_mrg_\%s\%s\%s.nc", name = "precip", units = "mm",
   longname = NA, prec = "short"), use.RnoR = FALSE,
-  pars.RnoR = list(wet.day = 1, smooth = FALSE, maxdist = 0.25),
-  vgm.model = c("Exp", "Gau", "Sph", "Pen"))
+  pars.RnoR = list(wet.day = 1, smooth = FALSE), vgm.model = c("Exp",
+  "Gau", "Sph", "Pen"))
 }
 \arguments{
 \item{time.step}{Time step of the data. Should be \strong{"daily"}, \strong{"pentad"}, \strong{"dekadal"} or \strong{"monthly"}.}
@@ -90,7 +90,6 @@ cdtMerging(time.step = "dekadal", start.date = c(1981, 1, 1),
 \itemize{
     \item \code{wet.day}: wet day definition
     \item \code{smooth}: if \code{TRUE}, smooth the mask
-    \item \code{maxdist}: maximum radius of influence in decimal degree
 }}
 
 \item{vgm.model}{A vector of variogram model to be used if \code{interp.method} is \strong{"kriging"}. Default is \code{c("Exp", "Gau", "Sph", "Pen")}.}
@@ -122,7 +121,7 @@ cdtMerging(
 					name = "precip", units = "mm",
 					longname = "Merged Station-Satellite Rainfall"),
 		use.RnoR = TRUE,
-		pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
+		pars.RnoR = list(wet.day = 1.0, smooth = FALSE),
 		vgm.model = c("Exp", "Gau", "Sph", "Pen")
 	)
 }

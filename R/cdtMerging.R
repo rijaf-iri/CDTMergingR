@@ -61,7 +61,6 @@
 #' \itemize{
 #' 	\item \code{wet.day}: wet day definition
 #' 	\item \code{smooth}: if \code{TRUE}, smooth the mask
-#' 	\item \code{maxdist}: maximum radius of influence in decimal degree
 #' }
 #' @param vgm.model A vector of variogram model to be used if \code{interp.method} is \strong{"kriging"}. Default is \code{c("Exp", "Gau", "Sph", "Pen")}.
 #'
@@ -88,7 +87,7 @@
 #' 					name = "precip", units = "mm",
 #' 					longname = "Merged Station-Satellite Rainfall"),
 #' 		use.RnoR = TRUE,
-#' 		pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
+#' 		pars.RnoR = list(wet.day = 1.0, smooth = FALSE),
 #' 		vgm.model = c("Exp", "Gau", "Sph", "Pen")
 #' 	)
 #' }
@@ -111,7 +110,7 @@ cdtMerging <- function(
 						neg.value = FALSE,
 						output = list(dir = NULL, format = "rr_mrg_%s%s%s.nc", name = "precip", units = "mm", longname = NA, prec = "short"),
 						use.RnoR = FALSE,
-						pars.RnoR = list(wet.day = 1.0, smooth = FALSE, maxdist = 0.25),
+						pars.RnoR = list(wet.day = 1.0, smooth = FALSE),
 						vgm.model = c("Exp", "Gau", "Sph", "Pen")
 					)
 {
@@ -179,10 +178,14 @@ cdtMerging <- function(
 					lat = as.numeric(stnData[3, -1]),
 					elv = if(pos == 4) as.numeric(stnData[4, -1]) else NULL,
 					dates = as.character(stnData[-(1:pos), 1]),
-					data =  apply(stnData[-(1:pos), -1], 2, as.numeric)
+					data = local({
+								tmp <- stnData[-(1:pos), -1, drop = FALSE]
+								ntmp <- dim(tmp)
+								tmp <- as.numeric(tmp)
+								dim(tmp) <- ntmp
+								tmp
+						})
 					)
-	dimnames(stnData$data)[[2]] <- NULL
-
 	##############
 
 	## Test netcdf missing
